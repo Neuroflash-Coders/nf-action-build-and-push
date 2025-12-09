@@ -15,6 +15,10 @@ inputs:
     description: 'Relative path to the dockerfile; default: ./Dockerfile'
     required: false
     default: './Dockerfile'
+  context:
+    description: 'Docker build context directory; default: .'
+    required: false
+    default: '.'
   tag:
     description: 'Tag for the docker image; default: all'
     required: false
@@ -60,10 +64,12 @@ runs:
             echo "${{ inputs.sshKey }}" > ${HOME}/.ssh_key
             DOCKER_BUILD_CMD="$DOCKER_BUILD_CMD --secret id=sshkey,src=$HOME/.ssh_key"
           fi
-        
+
+          DOCKER_BUILD_CMD="$DOCKER_BUILD_CMD \"${{ inputs.context }}\""
+
           # Execute build command
-          echo "Building and pushing Docker image with command: $DOCKER_BUILD_CMD ."
-          eval $DOCKER_BUILD_CMD .
+          echo "Building and pushing Docker image with command: $DOCKER_BUILD_CMD"
+          eval $DOCKER_BUILD_CMD
         else
           echo "Image already exists: $IMG"
         fi
