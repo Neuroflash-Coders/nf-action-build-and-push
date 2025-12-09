@@ -57,7 +57,7 @@ runs:
         if ! gcloud container images describe $IMG > /dev/null 2>&1; then
           # needed to enable caching, without it we can't use cache-to and cache-from
           docker buildx create --name cacheable --driver docker-container --use
-          DOCKER_BUILD_CMD="docker buildx build --tag \"${IMG}\" --push --file ${{ inputs.dockerfile }}"
+          DOCKER_BUILD_CMD="docker buildx build --tag \"${IMG}\" --push --file \"${{ inputs.dockerfile }}\""
 
           if [ "${{ inputs.sshKey }}" != "" ]; then
             echo "building docker image with ssh key"
