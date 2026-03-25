@@ -27,6 +27,10 @@ inputs:
     description: 'pass in an ssh key to the docker build'
     required: false
     default: ''
+  dockerCache:
+    description: 'Enable Docker layer caching via GitHub Actions cache (type=gha). Opt-in to avoid cache overhead for projects that do not benefit.'
+    required: false
+    default: 'false'
 runs:
   using: "composite"
   steps:
@@ -63,6 +67,10 @@ runs:
             echo "building docker image with ssh key"
             echo "${{ inputs.sshKey }}" > ${HOME}/.ssh_key
             DOCKER_BUILD_CMD="$DOCKER_BUILD_CMD --secret id=sshkey,src=$HOME/.ssh_key"
+          fi
+
+          if [ "${{ inputs.dockerCache }}" == "true" ]; then
+            DOCKER_BUILD_CMD="$DOCKER_BUILD_CMD --cache-from type=gha --cache-to type=gha,mode=max"
           fi
 
           DOCKER_BUILD_CMD="$DOCKER_BUILD_CMD \"${{ inputs.context }}\""
