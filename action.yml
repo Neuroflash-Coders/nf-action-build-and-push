@@ -24,9 +24,13 @@ inputs:
     required: false
     default: 'all'
   sshKey:
-    description: 'pass in an ssh key to the docker build'
+    description: 'Pass an SSH key as a build secret (--secret). Dockerfile must use --mount=type=secret,id=sshkey.'
     required: false
     default: ''
+  useSshAgent:
+    description: 'Forward the host SSH agent into the build (--ssh default). Dockerfile must use --mount=type=ssh. Requires webfactory/ssh-agent or similar setup beforehand.'
+    required: false
+    default: 'false'
   dockerCache:
     description: 'Enable Docker layer caching via GitHub Actions cache (type=gha). Opt-in to avoid cache overhead for projects that do not benefit.'
     required: false
@@ -64,9 +68,14 @@ runs:
           DOCKER_BUILD_CMD="docker buildx build --tag \"${IMG}\" --push --file \"${{ inputs.dockerfile }}\""
 
           if [ "${{ inputs.sshKey }}" != "" ]; then
-            echo "building docker image with ssh key"
+            echo "building docker image with ssh key as secret"
             echo "${{ inputs.sshKey }}" > ${HOME}/.ssh_key
             DOCKER_BUILD_CMD="$DOCKER_BUILD_CMD --secret id=sshkey,src=$HOME/.ssh_key"
+          fi
+
+          if [ "${{ inputs.useSshAgent }}" == "true" ]; then
+            echo "forwarding SSH agent into build"
+            DOCKER_BUILD_CMD="$DOCKER_BUILD_CMD --ssh default"
           fi
 
           if [ "${{ inputs.dockerCache }}" == "true" ]; then
